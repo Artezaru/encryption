@@ -2,7 +2,7 @@ import os
 from setuptools import setup, find_packages
 
 # Read the contents of your README file to use as the long description
-with open("../encryption/README.md", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 # Read the contents of your requirements.txt
