@@ -8,6 +8,8 @@ from .delete_bytearray import delete_bytearray
 from .create_hmac import create_hmac
 from .create_encryptedtext import create_encryptedtext
 from .extract_cryptography_components import extract_cryptography_components
+from .data_to_encryptedtext import data_to_encryptedtext
+from .encryptedtext_to_data import encryptedtext_to_data
 from .__version__ import __version__
 
 __all__ = [
@@ -21,5 +23,7 @@ __all__ = [
     "delete_bytearray",
     "create_derive_key",
     "compute_iteration_from_pin",
-    "extract_cryptography_components"
+    "extract_cryptography_components",
+    "data_to_encryptedtext",
+    "encryptedtext_to_data"
     ]

@@ -2,8 +2,9 @@ import unittest
 import os
 from encryption import *
 
-class TestExtractFileComponents(unittest.TestCase):
-    def test_extract_file_components(self):
+class TestEncryptionModule(unittest.TestCase):
+    def test_encryption_module(self):
+        print("test_encryption_module")
         # ===================
         # Encrypting the data
         # ===================
@@ -13,7 +14,6 @@ class TestExtractFileComponents(unittest.TestCase):
         iterations = compute_iteration_from_pin(pin)
         salt = random_bytearray(32)
         iv = random_bytearray(16)
-        iterations = compute_iteration_from_pin(pin)
         derive_key = create_derive_key(password, salt, iterations)
         ciphertext = encrypt_AES_CBC(data, derive_key, iv)
         expected_hmac = create_hmac(derive_key, iv, ciphertext)
@@ -45,6 +45,28 @@ class TestExtractFileComponents(unittest.TestCase):
         delete_bytearray(pin)
         delete_bytearray(derive_key)
         del iterations
+
+    def test_encryption_functions(self):
+        print("test_encryption_functions")
+        # ===================
+        # Encrypting the data
+        # ===================
+        data = bytearray("Hello World".encode('utf-8'))
+        password = bytearray("password".encode('utf-8'))
+        pin = bytearray("pin".encode('utf-8')) 
+        _, _, encryptedtext = data_to_encryptedtext(data, password, pin=pin)
+        print(f"Encrypted Text : {encryptedtext}")
+
+        # ============================
+        # Decrypting the encryptedtext
+        # ============================
+        password = bytearray("password".encode('utf-8'))
+        pin = bytearray("pin".encode('utf-8'))
+        _, _, data = encryptedtext_to_data(encryptedtext, password, pin=pin)
+        print(f"Decrypted data : {data}")
+
+        print(f"{password=}")
+        print(f"{pin=}")
 
 if __name__ == '__main__':
     unittest.main()

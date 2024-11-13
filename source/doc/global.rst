@@ -29,7 +29,6 @@ Basic Usage of encryption:
     iterations = compute_iteration_from_pin(pin)
     salt = random_bytearray(32)
     iv = random_bytearray(16)
-    iterations = compute_iteration_from_pin(pin)
     derive_key = create_derive_key(password, salt, iterations)
     ciphertext = encrypt_AES_CBC(data, derive_key, iv)
     expected_hmac = create_hmac(derive_key, iv, ciphertext)
@@ -40,6 +39,8 @@ Basic Usage of encryption:
     delete_bytearray(pin)
     delete_bytearray(derive_key)
     del iterations
+
+    # Use the data_to_encryptedtext function to apply the preceding lines directly 
 
     # ============================
     # Decrypting the encryptedtext
@@ -61,3 +62,4 @@ Basic Usage of encryption:
     delete_bytearray(derive_key)
     del iterations
 
+    # Use the encryptedtext2data function to apply the preceding lines directly 

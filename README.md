@@ -46,7 +46,6 @@ pin = bytearray("pin".encode('utf-8')) # Just to be on the safe side, you can us
 iterations = compute_iteration_from_pin(pin)
 salt = random_bytearray(32)
 iv = random_bytearray(16)
-iterations = compute_iteration_from_pin(pin)
 derive_key = create_derive_key(password, salt, iterations)
 ciphertext = encrypt_AES_CBC(data, derive_key, iv)
 expected_hmac = create_hmac(derive_key, iv, ciphertext)
@@ -57,6 +56,8 @@ delete_bytearray(password)
 delete_bytearray(pin)
 delete_bytearray(derive_key)
 del iterations
+
+# Use the data_to_encryptedtext function to apply the preceding lines directly 
 
 # ============================
 # Decrypting the encryptedtext
@@ -77,6 +78,8 @@ delete_bytearray(password)
 delete_bytearray(pin)
 delete_bytearray(derive_key)
 del iterations
+
+# Use the encryptedtext_to_data function to apply the preceding lines directly 
 ```
 
 ## License
