@@ -5,32 +5,20 @@ from .delete_bytearray import delete_bytearray
 from .extract_cryptography_components import extract_cryptography_components
 from .verify_key import verify_key
 from .decrypt_AES_CBC import decrypt_AES_CBC
+from .wrong_key_error import WrongKeyError
 
 def encryptedtext_to_data(encryptedtext: bytearray, password: bytearray, *, 
                           pin: Optional[bytearray] = None, 
                           iterations: int = 100_000,
                           Nmin: int = 100_000,
                           Nmax: int = 10_000_000
-                          ) -> (bool, int, bytearray):
+                          ) -> bytearray:
     """
-    encryptedtext_to_data decrypt the encrypted text.
-
-    If the process does not encounter an error, then the first return argument will be False, 
-    the second will be 0 and the third will be the decrypted data. 
-
-    If the process encounters an error, then the first return argument will be True, the 
-    second will be a number indicating the error encountered and the third an empty bytearray.
+    encryptedtext_to_data decrypts the encrypted text to generate the data.
 
     .. note::
-        - error = 0 : no error.
-        - error = 1 : encryptedtext password or pin parameters are not bytearray instance.
-        - error = 2 : iterations is not a positive integer.
-        - error = 3 : Nmin or Nmax are not positive integer and not 0 < Nmin < Nmax.
-        - error = 4 : encryptedtext not contains at least 80 bytes.
-        - error = 5 : The password, the pin are not correct or the encryptedtext has been modified.
-
-    .. note::
-        The password and pin will be deleted correctly in the function if no error occured.
+        password and pin will be deleted correctly in the function if no error occured.
+        Otherwize, they need to be delete after dealing with Exception.
 
     Parameters
     ----------
@@ -55,48 +43,43 @@ def encryptedtext_to_data(encryptedtext: bytearray, password: bytearray, *,
 
     Returns
     -------
-        error_encountered : bool
-            If the process encoutered an error.
-        error : int
-            The type of the error. See the note.
         data : bytearray
             The decrypting message using AES in CBC mode.
-
+    
+    Raises
+    ------
+        TypeError
+            If a argument is wrong type.
+        ValueError
+            If iterations <= 0 or not (0 < Nmin < Nmax)
+            If encryptedtext is not at least 80 bytes long 
+        WrongKeyError
+            If the password or the pin is incorect.
+            If the encryptedtext has been modified.
     """
     if (not isinstance(encryptedtext, bytearray)) or (not isinstance(password, bytearray)) or ((pin is not None) and (not isinstance(pin, bytearray))):
-        error_encountered = True
-        error = 1
-        data = bytearray("".encode('utf-8'))
-        return error_encountered, error, data
-    if (pin is None) and (not (isinstance(iterations, int) and iterations > 0)):
-        error_encountered = True
-        error = 2
-        data = bytearray("".encode('utf-8'))
-        return error_encountered, error, data
-    if (pin is not None) and (not (isinstance(Nmin, int) and isinstance(Nmax, int) and 0 < Nmin < Nmax)):
-        error_encountered = True
-        error = 3
-        data = bytearray("".encode('utf-8'))
-        return error_encountered, error, data
+        raise TypeError("Parameters encryptedtext password or pin is not bytearray")
+    if (pin is None) and (not isinstance(iterations, int)):
+        raise TypeError("Parameter iterations is not integer")
+    if (pin is None) and (iterations <= 0):
+        raise ValueError("Parameter iterations is not positive integer")
+    if (pin is not None) and (not (isinstance(Nmin, int) and isinstance(Nmax, int))):
+        raise TypeError("Parameters Nmin and Nmax are not integer")
+    if (pin is not None) and (not 0 < Nmin < Nmax):
+        raise TypeError("Parameters Nmin and Nmax not respect 0 < Nmin < Nmax")
     if len(encryptedtext) < 80:
-        error_encountered = True
-        error = 4
-        data = bytearray("".encode('utf-8'))
-        return error_encountered, error, data
+        raise ValueError("Parameter encryptedtext is not at least 80 bytes long.")
     # Encryption
     if pin is not None:
         iterations = compute_iteration_from_pin(pin, Nmin=Nmin, Nmax=Nmax)
     iv, salt, expected_hmac, ciphertext = extract_cryptography_components(encryptedtext)
     derive_key = create_derive_key(password, salt, iterations)
     if not verify_key(derive_key, iv, ciphertext, expected_hmac):
-        error_encountered = True
-        error = 5
-        data = bytearray("".encode('utf-8'))
-        return error_encountered, error, data
+        raise WrongKeyError("WARNING : password and pin can't decrypt the encryptedtext")
     data = decrypt_AES_CBC(ciphertext, derive_key, iv)
     # Deleting from memory all critical data for security
     delete_bytearray(password)
     delete_bytearray(pin)
     delete_bytearray(derive_key)
     del iterations
-    return False, 0, data
+    return data

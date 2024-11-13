@@ -54,7 +54,7 @@ class TestEncryptionModule(unittest.TestCase):
         data = bytearray("Hello World".encode('utf-8'))
         password = bytearray("password".encode('utf-8'))
         pin = bytearray("pin".encode('utf-8')) 
-        _, _, encryptedtext = data_to_encryptedtext(data, password, pin=pin)
+        encryptedtext = data_to_encryptedtext(data, password, pin=pin)
         print(f"Encrypted Text : {encryptedtext}")
 
         # ============================
@@ -62,8 +62,21 @@ class TestEncryptionModule(unittest.TestCase):
         # ============================
         password = bytearray("password".encode('utf-8'))
         pin = bytearray("pin".encode('utf-8'))
-        _, _, data = encryptedtext_to_data(encryptedtext, password, pin=pin)
+        data = encryptedtext_to_data(encryptedtext, password, pin=pin)
         print(f"Decrypted data : {data}")
+
+        print(f"{password=}")
+        print(f"{pin=}")
+
+        # ============================
+        # Decrypting with error
+        # ============================
+        password = bytearray("password2".encode('utf-8'))
+        pin = bytearray("pin".encode('utf-8'))
+        try :
+            data = encryptedtext_to_data(encryptedtext, password, pin=pin)
+        except WrongKeyError:
+            print(f"Decrypting data failed correctly")
 
         print(f"{password=}")
         print(f"{pin=}")

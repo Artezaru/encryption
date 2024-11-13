@@ -12,24 +12,13 @@ def data_to_encryptedtext(data: bytearray, password: bytearray, *,
                           iterations: int = 100_000,
                           Nmin: int = 100_000,
                           Nmax: int = 10_000_000
-                          ) -> (bool, int, bytearray):
+                          ) -> bytearray:
     """
-    data_to_encryptedtext generate the encrypted text.
-
-    If the process does not encounter an error, then the first return argument will be False, 
-    the second will be 0 and the third will be the encrypted text. 
-
-    If the process encounters an error, then the first return argument will be True, the 
-    second will be a number indicating the error encountered and the third an empty bytearray.
-
-    .. note::
-        - error = 0 : no error.
-        - error = 1 : data password or pin parameters are not bytearray instance.
-        - error = 2 : iterations is not a positive integer.
-        - error = 3 : Nmin or Nmax are not positive integer and not 0 < Nmin < Nmax.
+    data_to_encryptedtext encrypts the data to generate the encrypted text.
 
     .. note::
         The data, password and pin will be deleted correctly in the function if no error occured.
+        Otherwize, they need to be delete after dealing with Exception.
 
     Parameters
     ----------
@@ -54,28 +43,26 @@ def data_to_encryptedtext(data: bytearray, password: bytearray, *,
 
     Returns
     -------
-        error_encountered : bool
-            If the process encoutered an error.
-        error : int
-            The type of the error. See the note.
         encryptedtext : bytearray
             The encrypted text. 
+
+    Raises
+    ------
+        TypeError
+            If a argument is wrong type.
+        ValueError
+            If iterations <= 0 or not (0 < Nmin < Nmax)
     """
     if (not isinstance(data, bytearray)) or (not isinstance(password, bytearray)) or ((pin is not None) and (not isinstance(pin, bytearray))):
-        error_encountered = True
-        error = 1
-        encryptedtext = bytearray("".encode('utf-8'))
-        return error_encountered, error, encryptedtext
-    if (pin is None) and (not (isinstance(iterations, int) and iterations > 0)):
-        error_encountered = True
-        error = 2
-        encryptedtext = bytearray("".encode('utf-8'))
-        return error_encountered, error, encryptedtext
-    if (pin is not None) and (not (isinstance(Nmin, int) and isinstance(Nmax, int) and 0 < Nmin < Nmax)):
-        error_encountered = True
-        error = 3
-        encryptedtext = bytearray("".encode('utf-8'))
-        return error_encountered, error, encryptedtext
+        raise TypeError("Parameters data password or pin is not bytearray")
+    if (pin is None) and (not isinstance(iterations, int)):
+        raise TypeError("Parameter iterations is not integer")
+    if (pin is None) and (iterations <= 0):
+        raise ValueError("Parameter iterations is not positive integer")
+    if (pin is not None) and (not (isinstance(Nmin, int) and isinstance(Nmax, int))):
+        raise TypeError("Parameters Nmin and Nmax are not integer")
+    if (pin is not None) and (not 0 < Nmin < Nmax):
+        raise TypeError("Parameters Nmin and Nmax not respect 0 < Nmin < Nmax")
     # Encryption
     if pin is not None:
         iterations = compute_iteration_from_pin(pin, Nmin=Nmin, Nmax=Nmax)
@@ -92,4 +79,4 @@ def data_to_encryptedtext(data: bytearray, password: bytearray, *,
         delete_bytearray(pin)
     delete_bytearray(derive_key)
     del iterations
-    return False, 0, encryptedtext
+    return encryptedtext
