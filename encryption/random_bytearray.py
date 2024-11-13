@@ -23,7 +23,7 @@ def random_bytearray(Nbytes: int) -> bytearray:
     """
     if not isinstance(Nbytes, int):
         raise TypeError('Parameter Nbytes is not integer.')
-    if Nbytes <= 0:
+    if Nbytes < 0:
         raise ValueError('Parameter Nbytes must be a positive integer.')
     
     return bytearray(os.urandom(Nbytes))
