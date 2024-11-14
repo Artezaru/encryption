@@ -11,7 +11,8 @@ def data_to_encryptedtext(data: bytearray, password: bytearray, *,
                           pin: Optional[bytearray] = None, 
                           iterations: int = 100_000,
                           Nmin: int = 100_000,
-                          Nmax: int = 10_000_000
+                          Nmax: int = 10_000_000,
+                          delete_keys: bool = True
                           ) -> bytearray:
     """
     data_to_encryptedtext encrypts the data to generate the encrypted text.
@@ -40,6 +41,9 @@ def data_to_encryptedtext(data: bytearray, password: bytearray, *,
         Nmax : int
             If pin is not None, The maximum number of iteration to derive the key using PBKDF2.
             The default is 100_000.
+        delete_keys : bool
+            Delete the data, the password and the pin correctly from memory at the end of the function.
+            Default is True.
 
     Returns
     -------
@@ -63,6 +67,8 @@ def data_to_encryptedtext(data: bytearray, password: bytearray, *,
         raise TypeError("Parameters Nmin and Nmax are not integer")
     if (pin is not None) and (not 0 < Nmin < Nmax):
         raise TypeError("Parameters Nmin and Nmax not respect 0 < Nmin < Nmax")
+    if not isinstance(delete_keys, bool):
+        raise ValueError("Parameter delete_keys is not a booleen.")
     # Encryption
     if pin is not None:
         iterations = compute_iteration_from_pin(pin, Nmin=Nmin, Nmax=Nmax)
@@ -73,10 +79,11 @@ def data_to_encryptedtext(data: bytearray, password: bytearray, *,
     expected_hmac = create_hmac(derive_key, iv, ciphertext)
     encryptedtext = create_encryptedtext(iv, salt, expected_hmac, ciphertext)
     # Deleting from memory all critical data for security
-    delete_bytearray(data)
-    delete_bytearray(password)
-    if pin is not None:
-        delete_bytearray(pin)
+    if delete_keys:
+        delete_bytearray(password)
+        delete_bytearray(data)
+        if pin is not None:
+            delete_bytearray(pin)
     delete_bytearray(derive_key)
     del iterations
     return encryptedtext
